@@ -1,0 +1,76 @@
+import pandas as pd
+data = pd.read_csv("thanksgiving.csv", encoding = "Latin-1")
+print(data.head(3))
+data.value_counts()
+print(data.columns)
+
+data["Do you celebrate Thanksgiving?"].value_counts()
+celebrates_thanksgiving = data["Do you celebrate Thanksgiving?"] == "Yes"
+yes_thanksgiving = data[celebrates_thanksgiving]
+yes_thanksgiving["Do you celebrate Thanksgiving?"].value_counts()
+
+data["What is typically the main dish at your Thanksgiving dinner?"].value_counts()
+tofurkey_eaters = data["What is typically the main dish at your Thanksgiving dinner?"] == "Tofurkey"
+tofurkey_rows = data[tofurkey_eaters]
+print(tofurkey_rows["Do you typically have gravy?"])
+
+apple_isnull = pd.isnull(data["Which type of pie is typically served at your Thanksgiving dinner? Please select all that apply. - Apple"])
+pumpkin_isnull = pd.isnull(data["Which type of pie is typically served at your Thanksgiving dinner? Please select all that apply. - Pumpkin"])
+pecan_isnull = pd.isnull(data["Which type of pie is typically served at your Thanksgiving dinner? Please select all that apply. - Pecan"])
+no_pies = apple_isnull & pumpkin_isnull & pecan_isnull
+no_pies.value_counts()
+
+def string_to_integer(age_str):
+    if pd.isnull(age_str):
+        return None
+    age_str = age_str.split(" ")[0]
+    age_str = age_str.replace("+", "")
+    return int(age_str)
+
+data["int_age"] = data["Age"].apply(string_to_integer)
+
+print(data["int_age"].describe())
+
+"We are always taking the lowest bound of the possible values of age thereby underestimating the true value of survey participants ages. No, because we are undershooting"
+
+def to_integer(str):
+    if pd.isnull(str):
+        return None
+    first_item = str.split()[0]
+    if first_item == "Prefer":
+        return None
+    first_item = first_item.replace("$", "")
+    first_item = first_item.replace(",", "")
+    return int(first_item)
+
+data["int_income"] = data["How much total combined money did all members of your HOUSEHOLD earn last year?"].apply(to_integer)
+
+print(data["int_income"].describe())
+
+"It is an undershoot of the true value because again we are taking the lowest bound for each number"
+
+less_than_150000 = data["int_income"] < 150000
+rows_below_150000 = data[less_than_150000]
+poor_travellers = rows_below_150000["How far will you travel for Thanksgiving?"]
+poor_travellers.value_counts()
+
+more_than_150000 = data["int_income"] > 150000
+rows_above_150000 = data[more_than_150000]
+rich_travellers = rows_above_150000["How far will you travel for Thanksgiving?"]
+rich_travellers.value_counts()
+
+"There are far more individuals that make under 150000 a year. Seems like there is a similar trend in both though, there are less people who have to travel far for thanksgiving"
+
+data.pivot_table(
+    index="Have you ever tried to meet up with hometown friends on Thanksgiving night?", 
+    columns='Have you ever attended a "Friendsgiving?"',
+    values="int_age"
+)
+
+data.pivot_table(
+    index="Have you ever tried to meet up with hometown friends on Thanksgiving night?", 
+    columns='Have you ever attended a "Friendsgiving?"',
+    values="int_income"
+)
+
+"Individuals who participate in 'Friendsgivings' are typically younger and have a lower income. This can be because many students participate in 'Friendsgivings' since they are studying abroad and cannot afford to return home for thanksgiving"
