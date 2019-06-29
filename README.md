@@ -1,1 +1,1 @@
-# Thanksgiving Dinner project
+# Thanksgiving Dinner
